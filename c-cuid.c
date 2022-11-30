@@ -14,7 +14,6 @@ char* padCounter(char* buff, int len){
 	strcpy(backup, buff);
 	for(int i = 0; i < zerosToAdd; i++) buff[i] = '0';
 	for(int i = zerosToAdd; i < 4; i++) buff[i] = backup[i - zerosToAdd];
-
 }
 double randnum(){
 	unsigned int i;
@@ -120,4 +119,48 @@ char* cuid(char* buff){
 	for (int i = 0; i < 4; i++) buff[17+i] = random1[i];
 	for (int i = 0; i < 4; i++) buff[21+i] = random2[i];
 	buff[25] = 0;
+}
+char* slug(char* buff){
+	struct timeb timestampb;
+	ftime(&timestampb);
+	char pidS[4];
+	char timestampS[9];
+	char counterS[5];
+	char randomS[5];
+	char hostS[10];
+	char hostname[20];
+	tobase36string(&timestampS, 1000 * timestampb.time + timestampb.millitm);
+	buff[0] = timestampS[6];
+	buff[1] = timestampS[7];
+	tobase36string(counterS, safeCounter());
+	int len = strlen(counterS);
+	int i = 2;
+	for(; i < len+2; i++) buff[i] = counterS[i-2];
+	int pid = get_pid();
+	tobase36string(pidS, pid);
+	buff[i++] = pidS[0];
+	#ifdef _WIN32
+	WSADATA wsaData;
+	WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
+	WSACleanup();
+	#endif
+	gethostname(hostname, 20);
+	int hlen = strlen(hostname);
+	int initial = hlen + 36;
+	for (int j = 0; j < hlen; j++) initial += (int) hostname[j];
+	tobase36string(hostS, initial);
+	buff[i++] = hostS[0];
+	randomBlock(randomS);
+	buff[i++] = randomS[2];
+	buff[i++] = randomS[3];
+	buff[i] = 0;
+}
+_Bool isCuid(char* buff){
+	if(buff[0] != 'c' || strlen(buff) < 25) return 0;
+	return 1;
+}
+_Bool isSlug(char* buff){
+	int len = strlen(buff);
+	if(len >= 7 && len <= 10) return 1;
+	return 0;
 }
