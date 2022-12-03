@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "c-cuid.h"
+#include "c-cuid.h"
+// test duplicate includes
 int main(){
 	char a[CUID_LENGTH];
 	char b[SLUG_LENGTH];
