@@ -15,7 +15,7 @@ char* padCounter(char* buff, int len){
 	for(int i = 0; i < zerosToAdd; i++) buff[i] = '0';
 	for(int i = zerosToAdd; i < 4; i++) buff[i] = backup[i - zerosToAdd];
 }
-double randnum(){
+int randnum(){
 	unsigned int i;
 	#ifdef __unix__
 	FILE *fp;
@@ -25,7 +25,7 @@ double randnum(){
 	#elif defined(_WIN32)
 	rand_s(&i);
 	#endif
-	return (double)i/ 4294967295; // i / ( 2 ** 32 - 1 )
+	return i % discreteValues; // i / ( 2 ** 32 - 1 )
 }
 int get_pid(){
 	#ifdef __unix__
@@ -65,9 +65,9 @@ char* tobase36string(char* buff, time_t num) {
     return savedbuff;
 }
 void randomBlock(char* buff){
-	int random = randnum() * discreteValues;
+	int random = randnum();
 	tobase36string(buff, random);
-	padCounter(buff, strlen(buff));
+	// padCounter(buff, strlen(buff));
 }
 int safeCounter(){
 	static int counter = 0;

@@ -1,3 +1,6 @@
 c-cuid.o
 test.o
 test.exe
+ltest.c
+ltest.exe
+.vscode
