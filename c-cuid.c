@@ -3,10 +3,27 @@
 #include <stdlib.h>
 #include <string.h>
 #include "c-cuid.h"
+#define discreteValues 1679616 // 1679616 = 36^4 which is the value right next to the maximum int that gives 4 characters long base36 string
+
 #ifdef _WIN32
-#include <winsock2.h>
+#define get_pid GetCurrentProcessId
+int randnum(){
+	unsigned int i;
+	rand_s(&i);
+	return i % discreteValues; // i / ( 2 ** 32 - 1 )
+}
 #endif
-int discreteValues = 1679616; // 1679616 = 36^4 which is the value right next to the maximum int that gives 4 characters long base36 string
+#ifdef __unix__
+#define get_pid getpid
+int randnum(){
+	unsigned int i;
+	FILE *fp;
+	fp = fopen("/dev/urandom", "r");
+	fread(&i, 1, 4, fp);
+	fclose(fp);
+	return i % discreteValues; // i / ( 2 ** 32 - 1 )
+}
+#endif
 char* padCounter(char* buff, int len){
 	if(len == 4) return buff;
 	int zerosToAdd = 4 - len;
@@ -15,25 +32,7 @@ char* padCounter(char* buff, int len){
 	for(int i = 0; i < zerosToAdd; i++) buff[i] = '0';
 	for(int i = zerosToAdd; i < 4; i++) buff[i] = backup[i - zerosToAdd];
 }
-int randnum(){
-	unsigned int i;
-	#ifdef __unix__
-	FILE *fp;
-	fp = fopen("/dev/urandom", "r");
-	fread(&i, 1, 4, fp);
-	fclose(fp);
-	#elif defined(_WIN32)
-	rand_s(&i);
-	#endif
-	return i % discreteValues; // i / ( 2 ** 32 - 1 )
-}
-int get_pid(){
-	#ifdef __unix__
-	return getpid();
-	#elif defined(_WIN32)
-	return GetCurrentProcessId();
-	#endif
-}
+
 char *reverse(char *str)
 {
     char *end = str;
@@ -71,7 +70,7 @@ void randomBlock(char* buff){
 }
 int safeCounter(){
 	static int counter = 0;
-	if(counter >= 1679616) counter = 0; 
+	if(counter >= discreteValues) counter = 0; 
 	counter++;
 	return counter - 1;
 }
@@ -102,11 +101,11 @@ char* cuid(char* buff){
 	tobase36string(pidS, pid);
 	buff[13] = pidS[0];
 	buff[14] = pidS[1];
-	#ifdef _WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
-	WSACleanup();
-	#endif
+	// #ifdef _WIN32
+	// WSADATA wsaData;
+	// WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
+	// WSACleanup();
+	// #endif
 	gethostname(hostname, 20);
 	int hlen = strlen(hostname);
 	int initial = hlen + 36;
@@ -139,11 +138,11 @@ char* slug(char* buff){
 	int pid = get_pid();
 	tobase36string(pidS, pid);
 	buff[i++] = pidS[0];
-	#ifdef _WIN32
-	WSADATA wsaData;
-	WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
-	WSACleanup();
-	#endif
+	// #ifdef _WIN32
+	// WSADATA wsaData;
+	// WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
+	// WSACleanup();
+	// #endif
 	gethostname(hostname, 20);
 	int hlen = strlen(hostname);
 	int initial = hlen + 36;
