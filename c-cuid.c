@@ -10,7 +10,7 @@
 int randnum(){
 	unsigned int i;
 	rand_s(&i);
-	return i % discreteValues; // i / ( 2 ** 32 - 1 )
+	return i % discreteValues; // i % 
 }
 #endif
 #ifdef __unix__
@@ -21,7 +21,7 @@ int randnum(){
 	fp = fopen("/dev/urandom", "r");
 	fread(&i, 1, 4, fp);
 	fclose(fp);
-	return i % discreteValues; // i / ( 2 ** 32 - 1 )
+	return i % discreteValues; // i % 36^4 (% being the modulo operator, aka reminder operator)
 }
 #endif
 char* padCounter(char* buff, int len){
@@ -66,7 +66,7 @@ char* tobase36string(char* buff, time_t num) {
 void randomBlock(char* buff){
 	int random = randnum();
 	tobase36string(buff, random);
-	// padCounter(buff, strlen(buff));
+	padCounter(buff, strlen(buff));
 }
 int safeCounter(){
 	static int counter = 0;
@@ -101,11 +101,6 @@ char* cuid(char* buff){
 	tobase36string(pidS, pid);
 	buff[13] = pidS[0];
 	buff[14] = pidS[1];
-	// #ifdef _WIN32
-	// WSADATA wsaData;
-	// WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
-	// WSACleanup();
-	// #endif
 	gethostname(hostname, 20);
 	int hlen = strlen(hostname);
 	int initial = hlen + 36;
@@ -138,11 +133,6 @@ char* slug(char* buff){
 	int pid = get_pid();
 	tobase36string(pidS, pid);
 	buff[i++] = pidS[0];
-	// #ifdef _WIN32
-	// WSADATA wsaData;
-	// WSAStartup(MAKEWORD( 1, 0 ), &wsaData);
-	// WSACleanup();
-	// #endif
 	gethostname(hostname, 20);
 	int hlen = strlen(hostname);
 	int initial = hlen + 36;
